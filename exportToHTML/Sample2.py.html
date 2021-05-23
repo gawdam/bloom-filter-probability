@@ -1,0 +1,118 @@
+<html>
+<head>
+<title>Sample2.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #808080;}
+.s3 { color: #6a8759;}
+.s4 { color: #6897bb;}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+Sample2.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">pandas </span><span class="s0">as </span><span class="s1">pd     </span><span class="s2">#(version 0.24.2)</span>
+<span class="s0">import </span><span class="s1">math</span>
+<span class="s0">import </span><span class="s1">dash             </span><span class="s2">#(version 1.0.0)</span>
+<span class="s0">import </span><span class="s1">dash_core_components </span><span class="s0">as </span><span class="s1">dcc</span>
+<span class="s0">import </span><span class="s1">dash_html_components </span><span class="s0">as </span><span class="s1">html</span>
+<span class="s0">from </span><span class="s1">dash.dependencies </span><span class="s0">import </span><span class="s1">Input</span><span class="s0">, </span><span class="s1">Output</span>
+<span class="s0">import </span><span class="s1">plotly.express </span><span class="s0">as </span><span class="s1">px</span>
+<span class="s0">import </span><span class="s1">numpy </span><span class="s0">as </span><span class="s1">np</span>
+<span class="s0">import </span><span class="s1">chart_studio</span>
+<span class="s0">import </span><span class="s1">chart_studio.plotly </span><span class="s0">as </span><span class="s1">py</span>
+
+<span class="s1">username = </span><span class="s3">&quot;Gowdamn&quot;</span>
+<span class="s1">api_key = </span><span class="s3">&quot;GUrcvT3BxNuabS7JdcZz&quot;</span>
+<span class="s1">chart_studio.tools.set_credentials_file(username=username</span><span class="s0">, </span><span class="s1">api_key=api_key)</span>
+<span class="s1">array_size_max = </span><span class="s4">200</span>
+
+<span class="s1">app = dash.Dash(__name__)</span>
+
+<span class="s2">#---------------------------------------------------------------</span>
+<span class="s1">app.layout = html.Div([</span>
+        <span class="s1">html.Div([</span>
+            <span class="s1">html.Pre(children= </span><span class="s3">&quot;Bloom Filter&quot;</span><span class="s0">,</span>
+            <span class="s1">style={</span><span class="s3">&quot;text-align&quot;</span><span class="s1">: </span><span class="s3">&quot;center&quot;</span><span class="s0">, </span><span class="s3">&quot;font-size&quot;</span><span class="s1">:</span><span class="s3">&quot;300%&quot;</span><span class="s0">, </span><span class="s3">&quot;color&quot;</span><span class="s1">:</span><span class="s3">&quot;black&quot;</span><span class="s1">})</span>
+        <span class="s1">])</span><span class="s0">,</span>
+        <span class="s1">html.Div([</span>
+            <span class="s1">html.Pre(children= </span><span class="s3">&quot;Probability of False Positives&quot;</span><span class="s0">,</span>
+            <span class="s1">style={</span><span class="s3">&quot;text-align&quot;</span><span class="s1">: </span><span class="s3">&quot;center&quot;</span><span class="s0">, </span><span class="s3">&quot;font-size&quot;</span><span class="s1">:</span><span class="s3">&quot;200%&quot;</span><span class="s0">, </span><span class="s3">&quot;color&quot;</span><span class="s1">:</span><span class="s3">&quot;black&quot;</span><span class="s1">})</span>
+        <span class="s1">])</span><span class="s0">,</span>
+
+        <span class="s1">html.Div([</span>
+            <span class="s1">dcc.Graph(id=</span><span class="s3">'the_graph'</span><span class="s1">)</span>
+        <span class="s1">])</span><span class="s0">,</span>
+        <span class="s1">html.Div([</span>
+            <span class="s1">html.Pre(children= </span><span class="s3">&quot;Number of Hash Functions 'k':&quot;</span><span class="s0">,</span>
+            <span class="s1">style={</span><span class="s3">&quot;text-align&quot;</span><span class="s1">: </span><span class="s3">&quot;left&quot;</span><span class="s0">, </span><span class="s3">&quot;font-size&quot;</span><span class="s1">:</span><span class="s3">&quot;200%&quot;</span><span class="s0">, </span><span class="s3">&quot;color&quot;</span><span class="s1">:</span><span class="s3">&quot;black&quot;</span><span class="s1">})</span>
+        <span class="s1">])</span><span class="s0">,</span>
+        <span class="s1">html.Div([</span>
+            <span class="s1">dcc.Slider(</span>
+                <span class="s1">id=</span><span class="s3">'k-slider'</span><span class="s0">,</span>
+                <span class="s1">min=</span><span class="s4">1</span><span class="s0">,</span>
+                <span class="s1">max=</span><span class="s4">20</span><span class="s0">,</span>
+                <span class="s1">marks={i: </span><span class="s3">'{}'</span><span class="s1">.format(i) </span><span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">range(</span><span class="s4">20</span><span class="s1">)}</span><span class="s0">,</span>
+                <span class="s1">step=</span><span class="s4">1</span><span class="s0">,</span>
+                <span class="s1">value=</span><span class="s4">10</span><span class="s0">,</span>
+            <span class="s1">)</span><span class="s0">,</span>
+            <span class="s1">html.Div(id=</span><span class="s3">'slider-output-container-k'</span><span class="s1">)]</span>
+        <span class="s1">)</span><span class="s0">,</span>
+        <span class="s1">html.Div([</span>
+            <span class="s1">html.Pre(children=</span><span class="s3">&quot;Size of Bitarray 'm':&quot;</span><span class="s0">,</span>
+                     <span class="s1">style={</span><span class="s3">&quot;text-align&quot;</span><span class="s1">: </span><span class="s3">&quot;left&quot;</span><span class="s0">, </span><span class="s3">&quot;font-size&quot;</span><span class="s1">: </span><span class="s3">&quot;200%&quot;</span><span class="s0">, </span><span class="s3">&quot;color&quot;</span><span class="s1">: </span><span class="s3">&quot;black&quot;</span><span class="s1">})</span>
+        <span class="s1">])</span><span class="s0">,</span>
+        <span class="s1">html.Div([</span>
+        <span class="s1">dcc.Slider(</span>
+                <span class="s1">id=</span><span class="s3">'m-slider'</span><span class="s0">,</span>
+                <span class="s1">min=</span><span class="s4">1</span><span class="s0">,</span>
+                <span class="s1">max=</span><span class="s4">20</span><span class="s0">,</span>
+                <span class="s1">marks={i: </span><span class="s3">'{}'</span><span class="s1">.format(</span><span class="s4">50</span><span class="s1">*i) </span><span class="s0">for </span><span class="s1">i </span><span class="s0">in </span><span class="s1">range(</span><span class="s4">20</span><span class="s1">)}</span><span class="s0">,</span>
+                <span class="s1">step=</span><span class="s4">50</span><span class="s0">,</span>
+                <span class="s1">value=</span><span class="s4">15</span><span class="s0">,</span>
+                <span class="s1">updatemode=</span><span class="s3">'drag'</span><span class="s0">,</span>
+            <span class="s1">)</span><span class="s0">,</span>
+            <span class="s1">html.Div(id=</span><span class="s3">'slider-output-container-m'</span><span class="s1">)]</span>
+        <span class="s1">)</span><span class="s0">,</span>
+
+
+<span class="s1">])</span>
+<span class="s2">#---------------------------------------------------------------</span>
+<span class="s1">@app.callback(</span>
+    <span class="s1">Output(</span><span class="s3">'the_graph'</span><span class="s0">,</span><span class="s3">'figure'</span><span class="s1">)</span><span class="s0">,</span>
+    <span class="s1">[Input(</span><span class="s3">'k-slider'</span><span class="s0">,</span><span class="s3">'value'</span><span class="s1">)</span><span class="s0">,</span><span class="s1">Input(</span><span class="s3">'m-slider'</span><span class="s0">,</span><span class="s3">'value'</span><span class="s1">)]</span>
+<span class="s1">)</span>
+
+<span class="s0">def </span><span class="s1">update_graph(k</span><span class="s0">,</span><span class="s1">m):</span>
+     <span class="s2"># print(k)</span>
+    <span class="s2"># print(m)</span>
+    <span class="s2"># print (dff[:3])</span>
+    <span class="s1">m = m*</span><span class="s4">50</span>
+
+    <span class="s1">t = np.arange(</span><span class="s4">1</span><span class="s0">, </span><span class="s1">array_size_max</span><span class="s0">, </span><span class="s4">1</span><span class="s1">)</span>
+    <span class="s1">x=t</span>
+    <span class="s1">y = [(</span><span class="s4">1 </span><span class="s1">- math.exp(-k*</span><span class="s4">1.0 </span><span class="s1">/ (m*</span><span class="s4">1.0 </span><span class="s1">/ x*</span><span class="s4">1.0</span><span class="s1">)))**k </span><span class="s0">for </span><span class="s1">x </span><span class="s0">in </span><span class="s1">t]</span>
+    <span class="s1">data = {</span><span class="s3">'Input array size'</span><span class="s1">:x</span><span class="s0">,</span>
+            <span class="s3">'Probability'</span><span class="s1">: y}</span>
+    <span class="s1">print(len(x)</span><span class="s0">,</span><span class="s1">len(y))</span>
+
+    <span class="s1">df = pd.DataFrame(data)</span>
+    <span class="s1">scatterplot = px.line(df</span><span class="s0">, </span><span class="s1">x=</span><span class="s3">&quot;Input array size&quot;</span><span class="s0">,</span>
+        <span class="s1">y=</span><span class="s3">&quot;Probability&quot;</span><span class="s0">,</span>
+        <span class="s1">hover_data=[</span><span class="s3">'Probability'</span><span class="s1">]</span><span class="s0">,</span>
+        <span class="s1">height=</span><span class="s4">550</span>
+    <span class="s1">)</span>
+
+    <span class="s1">scatterplot.update_traces(textposition=</span><span class="s3">'top center'</span><span class="s1">)</span>
+    <span class="s0">return </span><span class="s1">(scatterplot)</span>
+
+<span class="s0">if </span><span class="s1">__name__ == </span><span class="s3">'__main__'</span><span class="s1">:</span>
+    <span class="s1">app.run_server(debug=</span><span class="s0">True</span><span class="s1">)</span>
+</pre>
+</body>
+</html>
